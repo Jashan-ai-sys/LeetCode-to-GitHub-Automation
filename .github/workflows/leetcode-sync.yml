@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,6 +24,11 @@ jobs:
       
       - name: Install dependencies
         run: pip install requests gitpython
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "LeetCode Bot"
+          git config --global user.email "leetcode-bot@users.noreply.github.com"
       
       - name: Create config file
         run: |
@@ -36,16 +42,16 @@ jobs:
             "commit_message_template": "Add: {problem_id} - {problem_title} [{difficulty}]"
           }' > config.json
       
+      - name: Create solutions directories
+        run: |
+          mkdir -p solutions/Easy solutions/Medium solutions/Hard
+      
       - name: Run LeetCode Sync
         run: python leetcode_sync.py --max 50
-      
-      - name: Configure Git
-        run: |
-          git config --global user.name "LeetCode Bot"
-          git config --global user.email "leetcode-bot@users.noreply.github.com"
       
       - name: Commit and Push
         run: |
           git add -A
           git diff --cached --quiet || git commit -m "Auto-sync LeetCode solutions $(date +'%Y-%m-%d')"
           git push
+
