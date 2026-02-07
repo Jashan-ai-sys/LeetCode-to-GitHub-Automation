@@ -120,8 +120,38 @@ class LeetCodeAPI:
             print(f"Error fetching submissions: {e}")
             return []
     
-    def get_all_accepted_submissions(self, max_submissions: int = 500) -> List[Dict]:
-        """Fetch all accepted submissions with pagination"""
+    def get_todays_submissions(self) -> List[Dict]:
+        """Fetch only today's accepted submissions"""
+        from datetime import datetime, timezone
+        
+        # Get today's date at midnight (UTC)
+        today = datetime.now(timezone.utc).date()
+        
+        print(f"Fetching today's submissions ({today})...")
+        
+        # Fetch recent submissions
+        submissions = self.get_all_submissions(limit=50, offset=0)
+        
+        todays_subs = []
+        for sub in submissions:
+            # Convert timestamp to date
+            timestamp = int(sub.get("timestamp", 0))
+            sub_date = datetime.fromtimestamp(timestamp, timezone.utc).date()
+            
+            if sub_date == today:
+                todays_subs.append(sub)
+            elif sub_date < today:
+                # Stop if we've gone past today (submissions are ordered by time)
+                break
+        
+        print(f"  Found {len(todays_subs)} submissions from today")
+        return todays_subs
+    
+    def get_all_accepted_submissions(self, max_submissions: int = 500, today_only: bool = False) -> List[Dict]:
+        """Fetch accepted submissions with pagination"""
+        if today_only:
+            return self.get_todays_submissions()
+        
         all_submissions = []
         offset = 0
         limit = 20

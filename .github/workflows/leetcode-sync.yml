@@ -50,7 +50,7 @@ jobs:
           mkdir -p solutions/Easy solutions/Medium solutions/Hard
       
       - name: Run LeetCode Sync
-        run: python leetcode_sync.py --max 50
+        run: python leetcode_sync.py --today
       
       - name: Commit and Push
         run: |

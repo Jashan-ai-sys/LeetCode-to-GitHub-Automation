@@ -33,7 +33,8 @@ def sync_submissions(
     config: dict,
     max_submissions: int = 100,
     dry_run: bool = False,
-    force: bool = False
+    force: bool = False,
+    today_only: bool = False
 ):
     """
     Main sync function
@@ -94,7 +95,7 @@ def sync_submissions(
     print()
     
     # Fetch submissions
-    submissions = api.get_all_accepted_submissions(max_submissions)
+    submissions = api.get_all_accepted_submissions(max_submissions, today_only=today_only)
     
     if not submissions:
         print("No accepted submissions found.")
@@ -235,6 +236,12 @@ def main():
     )
     
     parser.add_argument(
+        "--today",
+        action="store_true",
+        help="Sync only today's submissions"
+    )
+    
+    parser.add_argument(
         "--test", "-t",
         action="store_true",
         help="Test LeetCode API connection only"
@@ -257,7 +264,8 @@ def main():
             config,
             max_submissions=args.max,
             dry_run=args.dry_run,
-            force=args.force
+            force=args.force,
+            today_only=args.today or config.get("today_only", False)
         )
 
 

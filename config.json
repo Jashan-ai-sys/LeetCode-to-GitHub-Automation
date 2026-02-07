@@ -5,5 +5,6 @@
     "organize_by": "difficulty",
     "include_problem_description": true,
     "auto_push": true,
+    "today_only": true,
     "commit_message_template": "Add: {problem_id} - {problem_title} [{difficulty}]"
 }
