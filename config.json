@@ -1,0 +1,9 @@
+{
+    "leetcode_session": "",
+    "csrf_token": "",
+    "github_repo_path": "./solutions",
+    "organize_by": "difficulty",
+    "include_problem_description": true,
+    "auto_push": true,
+    "commit_message_template": "Add: {problem_id} - {problem_title} [{difficulty}]"
+}
