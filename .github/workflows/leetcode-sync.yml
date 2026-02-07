@@ -1,0 +1,51 @@
+name: LeetCode Daily Sync
+
+on:
+  schedule:
+    # Runs at 10 PM IST (4:30 PM UTC) every day
+    - cron: '30 16 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install requests gitpython
+      
+      - name: Create config file
+        run: |
+          echo '{
+            "leetcode_session": "${{ secrets.LEETCODE_SESSION }}",
+            "csrf_token": "",
+            "github_repo_path": "./solutions",
+            "organize_by": "difficulty",
+            "include_problem_description": true,
+            "auto_push": false,
+            "commit_message_template": "Add: {problem_id} - {problem_title} [{difficulty}]"
+          }' > config.json
+      
+      - name: Run LeetCode Sync
+        run: python leetcode_sync.py --max 50
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "LeetCode Bot"
+          git config --global user.email "leetcode-bot@users.noreply.github.com"
+      
+      - name: Commit and Push
+        run: |
+          git add -A
+          git diff --cached --quiet || git commit -m "Auto-sync LeetCode solutions $(date +'%Y-%m-%d')"
+          git push

@@ -81,8 +81,8 @@ class LeetCodeAPI:
     def get_all_submissions(self, limit: int = 20, offset: int = 0) -> List[Dict]:
         """Fetch user's submission history"""
         query = """
-        query submissionList($offset: Int!, $limit: Int!) {
-            submissionList(offset: $offset, limit: $limit) {
+        query submissionList($offset: Int!, $limit: Int!, $lastKey: String, $questionSlug: String, $lang: Int, $status: Int) {
+            submissionList(offset: $offset, limit: $limit, lastKey: $lastKey, questionSlug: $questionSlug, lang: $lang, status: $status) {
                 lastKey
                 hasNext
                 submissions {
@@ -108,20 +108,17 @@ class LeetCodeAPI:
                     "query": query,
                     "variables": {
                         "offset": offset,
-                        "limit": limit
+                        "limit": limit,
+                        "status": 10  # 10 = Accepted submissions only
                     }
                 }
             )
             data = response.json()
             submission_list = data.get("data", {}).get("submissionList", {})
-            all_subs = submission_list.get("submissions", [])
-            # Filter for accepted submissions only (status == 10)
-            accepted = [s for s in all_subs if s.get("status") == 10]
-            return accepted
+            return submission_list.get("submissions", [])
         except Exception as e:
             print(f"Error fetching submissions: {e}")
             return []
-
     
     def get_all_accepted_submissions(self, max_submissions: int = 500) -> List[Dict]:
         """Fetch all accepted submissions with pagination"""
@@ -155,6 +152,7 @@ class LeetCodeAPI:
             submissionDetails(submissionId: $submissionId) {
                 code
                 timestamp
+                statusDisplay
                 lang {
                     name
                     verboseName
@@ -173,30 +171,17 @@ class LeetCodeAPI:
         """
         
         try:
-            sub_id = int(submission_id)
             response = self.session.post(
                 self.GRAPHQL_URL,
                 json={
                     "query": query,
-                    "variables": {"submissionId": sub_id}
+                    "variables": {"submissionId": int(submission_id)}
                 }
             )
             data = response.json()
-            
-            # Check for errors
-            if "errors" in data:
-                print(f"    API Error: {data['errors']}")
-                return None
-                
-            result = data.get("data", {}).get("submissionDetails")
-            if not result:
-                print(f"    No data returned for ID {sub_id}")
-            return result
-        except ValueError as e:
-            print(f"    Invalid submission ID '{submission_id}': {e}")
-            return None
+            return data.get("data", {}).get("submissionDetails")
         except Exception as e:
-            print(f"    Error fetching submission code: {e}")
+            print(f"Error fetching submission code: {e}")
             return None
     
     def get_problem_details(self, title_slug: str) -> Optional[Dict]:
